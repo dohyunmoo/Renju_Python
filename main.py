@@ -1,78 +1,65 @@
-import pygame
-import objects as obj
+ROW, COLUMN = 9, 9
 
-# colors
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BEIGE = (225, 198, 153)
-
-# size of each cells and margin
-WIDTH, HEIGHT, MARGIN = 30, 30, 2
-
-# no. of rows and columns
-ROW, COLUMN = 15, 15
-
-# 15x15 grid
 grid = []
-for row in range(ROW):
+for row in range(ROW+1):
     grid.append([])
-    for column in range(COLUMN):
-        grid[row].append(0)
+    for column in range(COLUMN+1):
+        grid[row].append('-')
 
+finished = False
 count = 1
+turn = "Black"
+piece = "B"
 
-pygame.init()
- 
-WINDOW = [(WIDTH + MARGIN)*ROW + MARGIN, (HEIGHT + MARGIN)*COLUMN + MARGIN]
-screen = pygame.display.set_mode(WINDOW)
- 
-pygame.display.set_caption("Renju")
+numType = lambda x: x%2
 
-run = True
- 
-clock = pygame.time.Clock()
+while not finished:
+    for row in range(ROW+1):
+        grid[row][0] = str(row)
 
-# main
-while run:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
-            column = pos[0] // (WIDTH + MARGIN)
-            row = pos[1] // (HEIGHT + MARGIN)
-            if grid[row][column] == 0:
-                grid[row][column] = count
-                count += 1
+    for column in range(COLUMN+1):
+        grid[0][column] = str(column)
 
-    screen.fill(BLACK)
+    for row in range(ROW+1):
+        print(grid[row])
 
-    for row in range(ROW):
-        for column in range(COLUMN):
-            color = BEIGE
-            if ~obj.numberType(grid[row][column]):
-                color = BLACK
-            elif (obj.numberType(grid[row][column])) and (grid[row][column] != 0):
-                color = WHITE
-            pygame.draw.rect(screen,color,[(MARGIN + WIDTH) * column + MARGIN,(MARGIN + HEIGHT) * row + MARGIN,WIDTH,HEIGHT])
+    if numType(count):
+        turn = "Black"
+        piece = "B"
+    else:
+        turn = "White"
+        piece = "W"
 
-            # win types
-            while grid[row][column] != 0:
-                while row+4 <= ROW-1 and column+4 <= COLUMN-1:
-                    # horizontal win
-                    if obj.numberType(grid[row][column]) == obj.numberType(grid[row][column+1]) == obj.numberType(grid[row][column+2]) == obj.numberType(grid[row][column+3]) == obj.numberType(grid[row][column+4]):
-                        obj.winType(grid[row][column])
-                    # vertical win
-                    elif obj.numberType(grid[row][column]) == obj.numberType(grid[row+1][column]) == obj.numberType(grid[row+2][column]) == obj.numberType(grid[row+3][column]) == obj.numberType(grid[row+4][column]):
-                        obj.winType(grid[row][column])
-                    # diagonal win
-                    elif obj.numberType(grid[row][column]) == obj.numberType(grid[row+1][column+1]) == obj.numberType(grid[row+2][column+2]) == obj.numberType(grid[row+3][column+3]) == obj.numberType(grid[row+4][column+4]):
-                        obj.winType(grid[row][column])
+    x = int(input(f"It is {turn}'s turn. Please input row number then press Enter: "))
+    y = int(input(f"It is {turn}'s turn. Please input column number then press Enter: "))
 
-    clock.tick(20)
+    print(x, y)
 
-    pygame.display.update()
+    while (0 >= x) or (x > ROW) or (0 >= y) or (y > COLUMN):
+        x = int(input(f"Error: input value out of the range. It is {turn}'s turn. Please re-input row number then press Enter: "))
+        y = int(input(f"Error: input value out of the range. It is {turn}'s turn. Please re-input column number then press Enter: "))
+    
+    while grid[x][y] != '-':
+        x = int(input(f"Error: cell occupied. It is {turn}'s turn. Please re-input row number then press Enter: "))
+        y = int(input(f"Error: cell occupied. It is {turn}'s turn. Please re-input column number then press Enter: "))
 
-pygame.quit()
+    grid[x][y] = piece
 
-print(grid)
+    for row in range(1, ROW+1):
+        for column in range(1, COLUMN+1):
+            while column+4 <= COLUMN:
+                if grid[row][column] == grid[row][column+1] == grid[row][column+2] == grid[row][column+3] == grid[row][column+4] != '-':
+                    print(f"{turn} wins!")
+                    finished = True
+
+            while row+4 <= ROW:
+                if grid[row][column] == grid[row+1][column] == grid[row+2][column] == grid[row+3][column] == grid[row+4][column] != '-':
+                    print(f"{turn} wins!")
+                    finished = True
+            
+            while row+4 <= ROW and column+4 <= COLUMN:
+                if grid[row][column] == grid[row+1][column+1] == grid[row+2][column+2] == grid[row+3][column+3] == grid[row+4][column+4] != '-':
+                    print(f"{turn} wins!")
+                    finished = True
+    
+    count += 1
